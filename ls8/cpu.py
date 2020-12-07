@@ -1,6 +1,10 @@
 """CPU functionality."""
 import sys
 
+HLT = 0b00000001
+PRN = 0b01000111
+LDI = 0b10000010
+
 
 class CPU:
     """Main CPU class."""
@@ -9,6 +13,9 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0] * 256
         self.registers = [0] * 8
+        self.registers[7] = 0xF4
+        self.hault = False
+        self.pc = 0
 
     def load(self):
         """Load a program into memory."""
@@ -60,6 +67,30 @@ class CPU:
 
         print()
 
+    def ram_read(self, address):
+        return self.ram[address]
+
+    def ram_write(self, value, address):
+        self.ram[address] = value
+
+    def execute_instruction(self, instruction, op_a, op_b):
+        if instruction == HLT:
+            self.hault = True
+            print('PC has haulted')
+            self.pc += 1
+        elif instruction == PRN:
+            print(self.registers[op_a])
+            self.pc += 2
+        elif instruction == LDI:
+            self.registers[op_a] = op_b
+            self.pc += 3
+        else:
+            print('Not a valid instruction.')
+
     def run(self):
         """Run the CPU."""
-        pass
+        while self.hault == False:
+            instruction = self.ram_read(self.pc)
+            op_a = self.ram_read(self.pc + 1)
+            op_b = self.ram_read(self.pc + 2)
+            self.execute_instruction(instruction, op_a, op_b)
