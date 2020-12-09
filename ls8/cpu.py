@@ -4,6 +4,7 @@ import sys
 HLT = 0b00000001
 PRN = 0b01000111
 LDI = 0b10000010
+MUL = 0b10100010
 
 
 class CPU:
@@ -17,33 +18,26 @@ class CPU:
         self.hault = False
         self.pc = 0
 
-    def load(self):
+    def load(self, file_name):
         """Load a program into memory."""
-
         address = 0
 
-        # For now, we've just hardcoded a program:
-
-        program = [
-            # From print8.ls8
-            0b10000010,  # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111,  # PRN R0
-            0b00000000,
-            0b00000001,  # HLT
-        ]
-
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        with open(f'examples/{file_name}') as my_file:
+            for line in my_file:
+                comment_split = line.split('#')
+                possible_binary_num = comment_split[0]
+                try:
+                    x = int(possible_binary_num, 2)
+                    self.ram_write(x, address)
+                    address += 1
+                except:
+                    continue
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": etc
+        if op == MUL:
+            self.registers[reg_a] *= self.registers[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -84,11 +78,16 @@ class CPU:
         elif instruction == LDI:
             self.registers[op_a] = op_b
             self.pc += 3
+        elif instruction == MUL:
+            self.alu(instruction, op_a, op_b)
+            self.pc += 3
         else:
             print('Not a valid instruction.')
 
     def run(self):
         """Run the CPU."""
+        print('PC is running')
+
         while self.hault == False:
             instruction = self.ram_read(self.pc)
             op_a = self.ram_read(self.pc + 1)
