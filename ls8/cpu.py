@@ -8,6 +8,8 @@ MUL = 0b10100010
 PUSH = 0b01000101
 POP = 0b01000110
 SP = 7
+CALL = 0b01010000
+RET = 0b00010001
 
 
 class CPU:
@@ -92,6 +94,22 @@ class CPU:
             self.registers[op_a] = self.ram_read(self.registers[SP])
             self.registers[SP] += 1
             self.pc += 2
+        elif instruction == CALL:
+            # # Stores address of next instruction on top of stack
+            # address_of_next_instruction = self.pc + 2
+            # self.ram[self.registers[SP]] = address_of_next_instruction
+            # # Next, jumpst to address stored in register from step above
+            # register_to_get_address_from = self.ram[self.pc + 1]
+            # self.pc = self.registers[register_to_get_address_from]
+            self.registers[SP] -= 1
+            self.ram_write(self.pc + 2, self.registers[SP])
+            self.pc = self.registers[op_a]
+        elif instruction == RET:
+            # # Doesn't take in any operands, sets program counter to topmost element on stack and pop it
+            # self.pc = self.ram[self.registers[SP]]
+            # self.registers[SP] += 1
+            self.pc = self.ram_read(self.registers[SP])
+            self.registers[SP]
         else:
             print('Not a valid instruction.')
 
